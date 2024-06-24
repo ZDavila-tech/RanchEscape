@@ -6,7 +6,9 @@ import random
 from playsound import playsound
 
 
+pygame.init()
 pygame.font.init()
+
 game = True
 #Setting up Window
 WIDTH, HEIGHT = 1000, 800
@@ -14,26 +16,26 @@ WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Ranch Escape!")
 
 #background music
-BG = pygame.transform.scale(pygame.image.load("RanchEscape/background.jpg"), (WIDTH, HEIGHT))
+BG = pygame.transform.scale(pygame.image.load("background.jpg"), (WIDTH, HEIGHT))
 mixer.init()
-mixer.music.load("RanchEscape/music.mp3")
+mixer.music.load("music.mp3")
 mixer.music.set_volume(0.7)
 
 #sound effects
-horse_neigh = "RanchEscape/horseneigh.wav"
-cow_moo = "RanchEscape/cowmoo.wav"
+horse_neigh = "horseneigh.wav"
+cow_moo = "cowmoo.wav"
 
 #Player Stats
 PLAYER_WIDTH = 90
 PLAYER_HEIGHT = 80
 PLAYER_VEL = 5
-PLAYER_ICON = pygame.transform.scale(pygame.image.load("RanchEscape/player.png"), (PLAYER_WIDTH, PLAYER_HEIGHT))
+PLAYER_ICON = pygame.transform.scale(pygame.image.load("player.png"), (PLAYER_WIDTH, PLAYER_HEIGHT))
 
 #Enemy Stats
 STEER_WIDTH = 80
 STEER_HEIGHT = 60
 STEER_VEL = 4
-STEER_ICON = pygame.transform.scale(pygame.image.load("RanchEscape/cowboyhead.png"), (STEER_WIDTH, STEER_HEIGHT))
+STEER_ICON = pygame.transform.scale(pygame.image.load("cowboyhead.png"), (STEER_WIDTH, STEER_HEIGHT))
 
 
 #Fonts
@@ -138,15 +140,16 @@ def main():
 
 
 if __name__ == "__main__":
+    play = False
+    while play == False:
+        mainmenu()
+        pygame.display.update()
+        event = pygame.event.wait()
+        if event.type == KEYDOWN:
+            if event.key == K_SPACE:
+                play = True
+
     while game:
-        play = False
-        while play == False:
-            mainmenu()
-            pygame.display.update()
-            event = pygame.event.wait()
-            if event.type == KEYDOWN:
-                if event.key == K_SPACE:
-                    play = True
         main()
         pygame.event.clear()
         while True:
@@ -159,5 +162,5 @@ if __name__ == "__main__":
                     break
                 elif event.key == K_q:
                     game = False
-                    pygame.quit()
+                    break
                     
