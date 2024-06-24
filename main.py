@@ -11,53 +11,71 @@ game = True
 #Setting up Window
 WIDTH, HEIGHT = 1000, 800
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Steer RoundUp!")
+pygame.display.set_caption("Ranch Escape!")
 
 #background music
-BG = pygame.transform.scale(pygame.image.load("background.jpg"), (WIDTH, HEIGHT))
+BG = pygame.transform.scale(pygame.image.load("RanchEscape/background.jpg"), (WIDTH, HEIGHT))
 mixer.init()
-mixer.music.load("music.mp3")
+mixer.music.load("RanchEscape/music.mp3")
 mixer.music.set_volume(0.7)
 
 #sound effects
-horse_neigh = "horseneigh.wav"
-cow_moo = "cowmoo.wav"
+horse_neigh = "RanchEscape/horseneigh.wav"
+cow_moo = "RanchEscape/cowmoo.wav"
 
 #Player Stats
-PLAYER_WIDTH = 100
+PLAYER_WIDTH = 90
 PLAYER_HEIGHT = 80
 PLAYER_VEL = 5
-PLAYER_ICON = pygame.transform.scale(pygame.image.load("player.png"), (PLAYER_WIDTH, PLAYER_HEIGHT))
+PLAYER_ICON = pygame.transform.scale(pygame.image.load("RanchEscape/player.png"), (PLAYER_WIDTH, PLAYER_HEIGHT))
 
 #Enemy Stats
-STEER_WIDTH = 20
-STEER_HEIGHT = 20
+STEER_WIDTH = 80
+STEER_HEIGHT = 60
 STEER_VEL = 4
-STEER_NUM = 3
+STEER_ICON = pygame.transform.scale(pygame.image.load("RanchEscape/cowboyhead.png"), (STEER_WIDTH, STEER_HEIGHT))
+
 
 #Fonts
 FONT = pygame.font.SysFont("comicsans", 30)
+TITLEFONT = pygame.font.SysFont("comicsans", 40)
 
 #Draw Function
-def draw(player, elasped_time, steers):
+def draw(player, elasped_time, steers, PLAYER_LIVES):
     WIN.blit(BG, (0,0))
+    
+    WIN.blit(PLAYER_ICON, (player.x, player.y))
+
+    for steer in steers:
+        WIN.blit(STEER_ICON, (steer.x, steer.y))
 
     time_text = FONT.render(f"Time: {round(elasped_time)}s", 1, (255,255,255))
     WIN.blit(time_text, (10,10))
 
-    WIN.blit(PLAYER_ICON, (player.x, player.y))
-
-    for steer in steers:
-        pygame.draw.rect(WIN, (255,255,255), steer)
+    x = 900
+    y = 10
+    for _ in range(PLAYER_LIVES):
+        WIN.blit(PLAYER_ICON, (x, y))
+        x -= PLAYER_WIDTH - 5
 
     pygame.display.update()
 
+
+#main menu
+def mainmenu():
+    WIN.blit(BG, (0,0))
+    main_text = TITLEFONT.render("Ranch Escape", 1, (0,0,0))
+    begin_text = TITLEFONT.render("Press Space Bar to Begin", 1, (0,0,0))
+    WIN.blit(main_text, (WIDTH/2 - main_text.get_width()/2, HEIGHT/2 - main_text.get_height()/2 - 100))
+    WIN.blit(begin_text, (WIDTH/2 - begin_text.get_width()/2, HEIGHT/2 - begin_text.get_height()/2 - 50))
+    mixer.music.play()
 
 #main gameplay
 def main():
     run = True
     player = pygame.Rect(200, HEIGHT - PLAYER_HEIGHT - 10, PLAYER_WIDTH, PLAYER_HEIGHT)
     PLAYER_LIVES = 3
+    STEER_NUM = 3
     clock = pygame.time.Clock()
     start_time = time.time()
     elasped_time = 0
@@ -65,20 +83,15 @@ def main():
     steer_add_increment = 2000
     steer_count = 0 
     steers = []
-
     hit = False
     mixer.music.play()
     while run:
         steer_count += clock.tick(60)
         elasped_time = time.time() - start_time
 
-        if elasped_time % 40 == 0:
-            steer_add_increment -= 200
-        if elasped_time % 20 == 0:
-            STEER_NUM += 1
-
         if steer_count > steer_add_increment:
-            for _ in range(STEER_NUM):
+
+            for _ in range(random.randint(1,STEER_NUM)):
                 steer_x = random.randint(0, WIDTH - STEER_WIDTH)
                 steer = pygame.Rect(steer_x, -STEER_HEIGHT, STEER_WIDTH, STEER_HEIGHT)
                 steers.append(steer)
@@ -109,27 +122,36 @@ def main():
         if hit:
             PLAYER_LIVES -= 1
             if PLAYER_LIVES <= 0 :
-                lost_text = FONT.render(f"You Lost! High Score {round(elasped_time)}", 1, (255,255,255))
-                WIN.blit(lost_text, (WIDTH/2 - lost_text.get_width()/2, HEIGHT/2 - lost_text.get_height()/2))
+                draw(player, elasped_time, steers, PLAYER_LIVES)   
+                lost_text = TITLEFONT.render(f"You Lost! High Score {round(elasped_time)}", 1, (0,0,0))
+                WIN.blit(lost_text, (WIDTH/2 - lost_text.get_width()/2, HEIGHT/2 - lost_text.get_height()/2 - 50))
                 pygame.display.update()
                 mixer.music.stop()
                 playsound(horse_neigh, block=False)
-                pygame.time.delay(3000)
+                pygame.time.delay(1000)
                 break;
             else:
                 playsound(cow_moo, block=False)
             hit = False
 
-        draw(player, elasped_time, steers)    
+        draw(player, elasped_time, steers, PLAYER_LIVES)    
 
 
 if __name__ == "__main__":
     while game:
+        play = False
+        while play == False:
+            mainmenu()
+            pygame.display.update()
+            event = pygame.event.wait()
+            if event.type == KEYDOWN:
+                if event.key == K_SPACE:
+                    play = True
         main()
         pygame.event.clear()
         while True:
-            restart_text = FONT.render("Press R to Restart or Q to Quit", 1, (255,255,255))
-            WIN.blit(restart_text, (WIDTH/2 - restart_text.get_width()/2, HEIGHT/2 - restart_text.get_height()/2 + 50))
+            restart_text = FONT.render("Press R to Restart or Q to Quit", 1, (0,0,0))
+            WIN.blit(restart_text, (WIDTH/2 - restart_text.get_width()/2, HEIGHT/2 - restart_text.get_height()/2 ))
             pygame.display.update()
             event = pygame.event.wait()
             if event.type == KEYDOWN:
