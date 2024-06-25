@@ -10,6 +10,8 @@ pygame.init()
 pygame.font.init()
 
 game = True
+pause = False
+quitGame = True
 #Setting up Window
 WIDTH, HEIGHT = 1000, 800
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -72,8 +74,34 @@ def mainmenu():
     WIN.blit(begin_text, (WIDTH/2 - begin_text.get_width()/2, HEIGHT/2 - begin_text.get_height()/2 - 50))
     mixer.music.play()
 
+def paused():
+    global pause
+    pauseText = TITLEFONT.render("Game Paused", 1, (0,0,0))
+    continueText = FONT.render("Press C to Continue", 1, (0,0,0))
+    quitText = FONT.render("Press Q to Quit", 1, (0,0,0))
+
+    WIN.blit(pauseText, (WIDTH/2 - pauseText.get_width()/2, HEIGHT/2 - pauseText.get_height()/2 - 50))
+    WIN.blit(continueText, (WIDTH/2 - continueText.get_width()/2, HEIGHT/2 - continueText.get_height()/2))
+    WIN.blit(quitText, (WIDTH/2 - quitText.get_width()/2, HEIGHT/2 - quitText.get_height()/2 + 50))
+
+    while pause:
+        pygame.display.update()
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_c:
+                    pause = False
+                    break
+                elif event.key == pygame.K_q:
+                    pause = False
+                    pygame.quit()
+
+
+def quitGame():
+    pygame.quit()
+    quit()
 #main gameplay
 def main():
+    global pause
     run = True
     player = pygame.Rect(200, HEIGHT - PLAYER_HEIGHT - 10, PLAYER_WIDTH, PLAYER_HEIGHT)
     PLAYER_LIVES = 3
@@ -100,11 +128,6 @@ def main():
 
             steer_add_increment = max(200, steer_add_increment - 50)
             steer_count = 0
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                run = False
-                break
 
         keys = pygame.key.get_pressed()
         if keys[pygame.K_LEFT] and player.x - PLAYER_VEL >= 0:
@@ -137,11 +160,16 @@ def main():
             hit = False
 
         draw(player, elasped_time, steers, PLAYER_LIVES)    
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_p:
+                    pause = True
+                    paused()
 
 
 if __name__ == "__main__":
     play = False
-    while play == False:
+    while not play:
         mainmenu()
         pygame.display.update()
         event = pygame.event.wait()
@@ -149,18 +177,17 @@ if __name__ == "__main__":
             if event.key == K_SPACE:
                 play = True
 
-    while game:
-        main()
-        pygame.event.clear()
-        while True:
-            restart_text = FONT.render("Press R to Restart or Q to Quit", 1, (0,0,0))
-            WIN.blit(restart_text, (WIDTH/2 - restart_text.get_width()/2, HEIGHT/2 - restart_text.get_height()/2 ))
-            pygame.display.update()
-            event = pygame.event.wait()
-            if event.type == KEYDOWN:
-                if event.key == K_r:
-                    break
-                elif event.key == K_q:
-                    game = False
-                    break
+    main()
+    pygame.event.clear()
+    while quitGame:
+        restart_text = FONT.render("Press R to Restart or Q to Quit", 1, (0,0,0))
+        WIN.blit(restart_text, (WIDTH/2 - restart_text.get_width()/2, HEIGHT/2 - restart_text.get_height()/2 ))
+        pygame.display.update()
+        event = pygame.event.wait()
+        if event.type == KEYDOWN:
+            if event.key == K_r:
+                break
+            elif event.key == K_q:
+                quitGame = True
+                break
                     
